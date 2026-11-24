@@ -66,8 +66,9 @@ class OpenMeteo
     public function forecast(array $city): array
     {
         $id = round($city['latitude'], 2).','.round($city['longitude'], 2);
-        $freshKey = "forecast:{$id}";
-        $lastKey = "forecast:last:{$id}";
+        // v2: в прогнозе появились почасовые данные, УФ и видимость. Старые копии из кеша не подходят.
+        $freshKey = "forecast:v2:{$id}";
+        $lastKey = "forecast:v2:last:{$id}";
 
         if ($cached = Cache::get($freshKey)) {
             return ['source' => 'cache'] + $cached;
@@ -79,8 +80,12 @@ class OpenMeteo
                 'longitude' => $city['longitude'],
                 'timezone' => $city['timezone'],
                 'forecast_days' => 7,
-                'current' => 'temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code',
-                'daily' => 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max',
+                'forecast_hours' => 24,
+                'current' => 'temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_direction_10m,'
+                    .'wind_gusts_10m,weather_code,uv_index,visibility,pressure_msl,is_day',
+                'hourly' => 'temperature_2m,weather_code,precipitation_probability,wind_speed_10m,is_day',
+                'daily' => 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,'
+                    .'wind_speed_10m_max,uv_index_max,sunrise,sunset',
                 'wind_speed_unit' => 'ms',
             ]);
 
@@ -116,6 +121,23 @@ class OpenMeteo
     {
         $c = $data['current'];
         $d = $data['daily'];
+        $h = $data['hourly'] ?? ['time' => []];
+        $num = fn (array $list, int $i) => isset($list[$i]) ? (float) $list[$i] : null;
+
+        $hours = [];
+        foreach ($h['time'] as $i => $time) {
+            $code = $h['weather_code'][$i] ?? null;
+            $hours[] = [
+                'time' => $time,
+                'temperature' => (int) round($h['temperature_2m'][$i]),
+                'precipitation' => $h['precipitation_probability'][$i] ?? null,
+                'wind' => ($w = $num($h['wind_speed_10m'] ?? [], $i)) === null ? null : (int) round($w),
+                'is_day' => (bool) ($h['is_day'][$i] ?? 1),
+                'code' => $code,
+                'label' => WeatherCode::label($code),
+                'group' => WeatherCode::group($code),
+            ];
+        }
 
         $days = [];
         foreach ($d['time'] as $i => $date) {
@@ -125,7 +147,10 @@ class OpenMeteo
                 'max' => (int) round($d['temperature_2m_max'][$i]),
                 'min' => (int) round($d['temperature_2m_min'][$i]),
                 'precipitation' => $d['precipitation_probability_max'][$i] ?? null,
-                'wind' => isset($d['wind_speed_10m_max'][$i]) ? (int) round($d['wind_speed_10m_max'][$i]) : null,
+                'wind' => ($w = $num($d['wind_speed_10m_max'] ?? [], $i)) === null ? null : (int) round($w),
+                'uv' => ($uv = $num($d['uv_index_max'] ?? [], $i)) === null ? null : (int) round($uv),
+                'sunrise' => $d['sunrise'][$i] ?? null,
+                'sunset' => $d['sunset'][$i] ?? null,
                 'code' => $code,
                 'label' => WeatherCode::label($code),
                 'group' => WeatherCode::group($code),
@@ -139,10 +164,18 @@ class OpenMeteo
                 'feels_like' => (int) round($c['apparent_temperature']),
                 'humidity' => $c['relative_humidity_2m'],
                 'wind' => round($c['wind_speed_10m'], 1),
+                'wind_direction' => $c['wind_direction_10m'] ?? null,
+                'gusts' => isset($c['wind_gusts_10m']) ? round($c['wind_gusts_10m'], 1) : null,
+                'uv' => isset($c['uv_index']) ? round($c['uv_index'], 1) : null,
+                // Open-Meteo отдаёт видимость в метрах, давление в гПа. Пересчитываем в привычные км и мм рт. ст.
+                'visibility' => isset($c['visibility']) ? round($c['visibility'] / 1000, 1) : null,
+                'pressure' => isset($c['pressure_msl']) ? (int) round($c['pressure_msl'] * 0.750062) : null,
+                'is_day' => (bool) ($c['is_day'] ?? 1),
                 'code' => $c['weather_code'],
                 'label' => WeatherCode::label($c['weather_code']),
                 'group' => WeatherCode::group($c['weather_code']),
             ],
+            'hours' => $hours,
             'days' => $days,
         ];
     }

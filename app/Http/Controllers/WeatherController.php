@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Search;
 use App\Services\OpenMeteo;
+use App\Support\Theme;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
@@ -19,6 +20,8 @@ class WeatherController extends Controller
     {
         $data = $request->validate([
             'city' => ['nullable', 'string', 'max:80'],
+            // Ручной выбор оформления для показа: ?theme=rain. Без параметра тема подбирается по погоде.
+            'theme' => ['nullable', 'string', 'in:'.implode(',', array_keys(Theme::LABELS))],
         ], [
             'city.max' => 'Название города не длиннее 80 символов.',
         ]);
@@ -30,8 +33,14 @@ class WeatherController extends Controller
             Search::remember($result['city']);
         }
 
+        $auto = $result['forecast'] ? Theme::resolve($result['forecast']['current'], $result['city']['latitude']) : 'fog';
+
         return view('weather.index', $result + [
             'query' => $query,
+            'theme' => $data['theme'] ?? $auto,
+            'autoTheme' => $auto,
+            'themeForced' => isset($data['theme']),
+            'night' => $result['forecast'] ? ! $result['forecast']['current']['is_day'] : false,
             'recent' => Search::orderByDesc('updated_at')->limit(8)->get(),
         ]);
     }

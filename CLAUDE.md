@@ -5,20 +5,26 @@
 ## Запуск и тесты
 - Windows: `start.bat` → `scripts/start.ps1` (5 шагов: PHP, composer, .env, SQLite+migrate, serve на свободном порту от 8000).
 - Без окон и браузера: `$env:WEATHER_NONINTERACTIVE='1'` перед запуском `start.ps1`.
-- Тесты: `C:\Users\Public\kassa6379-tools\php\php.exe artisan test` (10 тестов, сеть не нужна).
+- Тесты: `C:\Users\Public\kassa6379-tools\php\php.exe artisan test` (15 тестов, сеть не нужна).
+- Скриншоты для README: Playwright, окно 1280×900 (не fullPage: фиксированное небо не попадает ниже первого экрана) и 390×844; темы через `?theme=`; файлы в `docs/screenshots/`.
 - Системный PHP в `Documents\php 8.3` не подходит (кириллица/пробел в пути, нет нужных расширений); берём переносной из `C:\Users\Public\kassa6379-tools` (общая папка с прошлыми ЛР).
 
 ## Решения
 - Open-Meteo: без ключа, понимает русские названия городов.
 - Защита от сбоев API: таймаут 5 с, retry, свежий кеш 30 мин, плюс `forecast:last:*` навсегда → источник `stale`, если сеть упала. Без копии показываем «Прогноз недоступен», API отвечает 503.
 - Кеш в базе (`CACHE_STORE=database`), Redis не нужен.
-- Фронт без сборки: `public/css/app.css` + blade.
+- Фронт без сборки: `public/css/app.css` + blade. Стиль liquid glass, тема меняется под погоду (пользователь сам просил: жара плавит, дождь стекает, мороз в инее, весна в цветах, осень в листьях).
+- Тема (`App\Support\Theme`): осадки > жара ≥25° / мороз ≤0° > сезон с учётом полушария. `?theme=` для показа. Ночь (`is_day`) — модификатор `is-night`.
+- Ключи кеша `forecast:v2:*`: при смене формата прогноза поднимать версию, иначе старые копии ломают шаблон.
 
 ## Подводные камни
 - cURL error 60 на Windows PHP (нет CA). Решено через `composer/ca-bundle` в `OpenMeteo::get()`. Не убирать.
 - В `Http::fake` шаблоны дополняются `*` в начале: `api.open-meteo.com/*` ловит и `geocoding-api...`. Поэтому в тестах полные `https://`-шаблоны.
 - `start.bat` только ASCII; `start.ps1` в UTF-8 с BOM и CRLF (PS 5.1), это закреплено в `.gitattributes`.
 - Composer запускать только как `composer.phar` тем же PHP: в колледже системный composer привязан к PHP 8.2 (XAMPP).
+- Класс темы стоит на `<html>`, у body нет фона: фон body рисуется поверх слоя `.sky` с `z-index:-1`, и небо пропадает.
+- Марево (`filter:url(#haze)`) сдвигает пиксели, поэтому у `.sky` запас `inset:-80px`, иначе по краям видна рваная кромка.
+- `ucfirst` не работает с кириллицей, нужен `Str::ucfirst`.
 - CLAUDE.md из скелета Laravel (установка Boost) заменён этим файлом, Boost не ставили.
 
 ## Не сделано

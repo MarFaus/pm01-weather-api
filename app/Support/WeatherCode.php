@@ -44,13 +44,14 @@ class WeatherCode
         return self::LABELS[$code] ?? 'Нет данных';
     }
 
-    /** Группа для цвета и значка: clear, cloud, fog, rain, snow, storm. */
+    /** Группа для цвета и значка: clear, partly, cloud, fog, rain, snow, storm. */
     public static function group(?int $code): string
     {
         return match (true) {
             $code === null => 'cloud',
             $code <= 1 => 'clear',
-            $code <= 3 => 'cloud',
+            $code === 2 => 'partly',
+            $code === 3 => 'cloud',
             $code <= 48 => 'fog',
             in_array($code, [71, 73, 75, 77, 85, 86], true) => 'snow',
             $code >= 95 => 'storm',

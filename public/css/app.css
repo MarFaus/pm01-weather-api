@@ -1,114 +1,440 @@
-/* Сводка: прогноз погоды на Open-Meteo. Без сборщиков, один файл. */
-:root {
-    --bg: #E8EDF1;
-    --panel: #FFFFFF;
-    --ink: #0F1B2D;
-    --ink-2: #4A5668;
-    --ink-3: #737E8F;
-    --line: #CBD3DC;
-    --warm: #E2552D;
-    --cold: #3A6FD8;
-    --sky-clear: #FBE7A1;
-    --sky-cloud: #D6DEE7;
-    --sky-fog: #E0E3E6;
-    --sky-rain: #BFD3EE;
-    --sky-snow: #EAF2FB;
-    --sky-storm: #C3BEDB;
-    --radius: 10px;
+/*
+ * Сводка: прогноз погоды на Open-Meteo. Стиль liquid glass, без сборщиков.
+ * Тема (класс theme-* на body) меняет небо, цвет текста и стекло. Эффекты рисует слой .fx.
+ */
+
+/* ---------------------------------------------------------------- Темы */
+:root, .theme-summer {
+    --sky-1: #0B4AAE; --sky-2: #2F86E8; --sky-3: #8CC8FF;
+    --blob-a: #FFD76A; --blob-b: #5FD1FF; --blob-c: #2563EB;
+    --ink: #FFFFFF; --ink-2: rgba(255, 255, 255, .78);
+    --glass: rgba(255, 255, 255, .14); --glass-edge: rgba(255, 255, 255, .5);
+    --blur: 22px; --sat: 170%;
+    --warm: #FFB86B; --cold: #BFE3FF; --accent: #FFFFFF; --accent-ink: #0B4AAE;
+    --sun: #FFD54A; --sun-edge: #FFB300; --moon: #F4F1DE; --panel: rgba(255, 255, 255, .9);
+    --track: rgba(255, 255, 255, .22);
+}
+.theme-heat {
+    --sky-1: #FF4D12; --sky-2: #FF8A2E; --sky-3: #FFD36E;
+    --blob-a: #FFF0A8; --blob-b: #FF2E00; --blob-c: #FFB000;
+    --ink: #3B1200; --ink-2: rgba(59, 18, 0, .74);
+    --glass: rgba(255, 246, 230, .3); --glass-edge: rgba(255, 250, 240, .75);
+    --warm: #C0300A; --cold: #8A4A00; --accent: #3B1200; --accent-ink: #FFF3DF;
+    --track: rgba(59, 18, 0, .14); --drip: #FFE3BD;
+}
+.theme-spring {
+    --sky-1: #FFC9D9; --sky-2: #D7F0C8; --sky-3: #8FD3A8;
+    --blob-a: #FF9EC1; --blob-b: #B8F0A0; --blob-c: #FFF3B0;
+    --ink: #17351F; --ink-2: rgba(23, 53, 31, .74);
+    --glass: rgba(255, 255, 255, .38); --glass-edge: rgba(255, 255, 255, .85);
+    --warm: #D6336C; --cold: #2B7A4B; --accent: #17351F; --accent-ink: #FFFFFF;
+    --track: rgba(23, 53, 31, .12);
+}
+.theme-autumn {
+    --sky-1: #2A1206; --sky-2: #8C3A12; --sky-3: #D9822B;
+    --blob-a: #FF8A2A; --blob-b: #B2321B; --blob-c: #F2B33D;
+    --ink: #FFF7EC; --ink-2: rgba(255, 247, 236, .78);
+    --glass: rgba(255, 230, 200, .12); --glass-edge: rgba(255, 228, 196, .45);
+    --warm: #FFB36B; --cold: #FFE2B8; --accent: #FFF7EC; --accent-ink: #5A220A;
+    --track: rgba(255, 247, 236, .2);
+}
+.theme-winter {
+    --sky-1: #1B2C4A; --sky-2: #4D6F9C; --sky-3: #B9D2EA;
+    --blob-a: #A9D4FF; --blob-b: #E8F3FF; --blob-c: #3B5B8C;
+    --ink: #FFFFFF; --ink-2: rgba(255, 255, 255, .8);
+    --glass: rgba(235, 245, 255, .16); --glass-edge: rgba(255, 255, 255, .55);
+    --blur: 30px; --sat: 120%;
+    --warm: #FFD0A8; --cold: #CDE7FF; --accent: #FFFFFF; --accent-ink: #1B2C4A;
+    --track: rgba(255, 255, 255, .22);
+}
+.theme-frost {
+    --sky-1: #DDEEFA; --sky-2: #A6CBE6; --sky-3: #5F8FB8;
+    --blob-a: #FFFFFF; --blob-b: #BFE3FF; --blob-c: #7FB2DB;
+    --ink: #0C2340; --ink-2: rgba(12, 35, 64, .72);
+    --glass: rgba(255, 255, 255, .42); --glass-edge: rgba(255, 255, 255, .9);
+    --blur: 40px; --sat: 90%;
+    --warm: #B4432B; --cold: #1F5F9E; --accent: #0C2340; --accent-ink: #EAF6FF;
+    --track: rgba(12, 35, 64, .12);
+}
+.theme-rain {
+    --sky-1: #0D1825; --sky-2: #22374D; --sky-3: #4A6683;
+    --blob-a: #3F7BBF; --blob-b: #6A90B8; --blob-c: #1B2B40;
+    --ink: #EEF5FF; --ink-2: rgba(238, 245, 255, .76);
+    --glass: rgba(200, 225, 255, .1); --glass-edge: rgba(200, 225, 255, .38);
+    --warm: #FFB38A; --cold: #9CCBFF; --accent: #EEF5FF; --accent-ink: #0D1825;
+    --track: rgba(238, 245, 255, .18);
+}
+.theme-storm {
+    --sky-1: #0E0A1C; --sky-2: #262044; --sky-3: #4B3F6B;
+    --blob-a: #7C5CFF; --blob-b: #2F2A55; --blob-c: #B49CFF;
+    --ink: #F3EFFF; --ink-2: rgba(243, 239, 255, .76);
+    --glass: rgba(210, 200, 255, .1); --glass-edge: rgba(210, 200, 255, .36);
+    --warm: #FFC66B; --cold: #B7C8FF; --accent: #F3EFFF; --accent-ink: #1A1433;
+    --track: rgba(243, 239, 255, .18);
+}
+.theme-snow {
+    --sky-1: #29405F; --sky-2: #6F8FB3; --sky-3: #D3E3F2;
+    --blob-a: #FFFFFF; --blob-b: #A7CDF0; --blob-c: #3E5D86;
+    --ink: #FFFFFF; --ink-2: rgba(255, 255, 255, .82);
+    --glass: rgba(255, 255, 255, .2); --glass-edge: rgba(255, 255, 255, .65);
+    --blur: 32px; --sat: 110%;
+    --warm: #FFD0A8; --cold: #DDF0FF; --accent: #FFFFFF; --accent-ink: #29405F;
+    --track: rgba(255, 255, 255, .24);
+}
+.theme-fog {
+    --sky-1: #7E8892; --sky-2: #B3BCC4; --sky-3: #E1E6EA;
+    --blob-a: #FFFFFF; --blob-b: #9AA6B0; --blob-c: #D0D6DB;
+    --ink: #1F2830; --ink-2: rgba(31, 40, 48, .72);
+    --glass: rgba(255, 255, 255, .34); --glass-edge: rgba(255, 255, 255, .8);
+    --blur: 34px; --sat: 100%;
+    --warm: #B4532B; --cold: #3F6E99; --accent: #1F2830; --accent-ink: #FFFFFF;
+    --track: rgba(31, 40, 48, .12);
+}
+/* Ночь: небо темнеет, текст светлый, эффекты темы остаются. */
+.is-night {
+    --sky-1: #040A1C; --sky-2: #10224A; --sky-3: #2B4173;
+    --blob-c: #1B2F66;
+    --ink: #F2F5FF; --ink-2: rgba(242, 245, 255, .74);
+    --glass: rgba(190, 210, 255, .09); --glass-edge: rgba(200, 215, 255, .34);
+    --accent: #F2F5FF; --accent-ink: #0B1633;
+    --warm: #FFB38A; --cold: #A9C8FF; --track: rgba(242, 245, 255, .18);
 }
 
+/* ---------------------------------------------------------------- База */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--ink); font: 400 16px/1.5 'Onest', system-ui, sans-serif; }
+/* Класс темы стоит на <html>: фон корня рисуется под всем, в том числе под .sky и эффектами.
+   У body своего фона нет, иначе он закроет небо. */
+html { min-height: 100%; background: linear-gradient(160deg, var(--sky-1) 0%, var(--sky-2) 55%, var(--sky-3) 100%) fixed var(--sky-1); }
+body {
+    min-height: 100vh; color: var(--ink);
+    font: 400 16px/1.5 'Onest', system-ui, sans-serif; font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
 a { color: inherit; text-underline-offset: 3px; }
-:focus-visible { outline: 3px solid var(--cold); outline-offset: 2px; }
-.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.muted { color: var(--ink-2); }
+.small { font-size: 14px; }
 
-.page { max-width: 1080px; margin: 0 auto; padding: 28px 16px 40px; }
+/* Небо: градиент и размытые цветные пятна, они и дают стеклу цвет. */
+.sky { position: fixed; inset: 0; z-index: -2; overflow: hidden; background: linear-gradient(160deg, var(--sky-1) 0%, var(--sky-2) 55%, var(--sky-3) 100%); }
+.sky__blob { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .75; animation: float 24s ease-in-out infinite alternate; }
+.sky__blob--a { width: 46vmax; height: 46vmax; background: var(--blob-a); top: -14vmax; right: -10vmax; }
+.sky__blob--b { width: 38vmax; height: 38vmax; background: var(--blob-b); bottom: -12vmax; left: -10vmax; animation-duration: 30s; }
+.sky__blob--c { width: 30vmax; height: 30vmax; background: var(--blob-c); top: 40%; left: 40%; opacity: .5; animation-duration: 36s; }
+@keyframes float { to { transform: translate(6vmax, 4vmax) scale(1.12); } }
+.is-night .sky__blob { opacity: .28; }
+.is-night .sky__blob--c { opacity: .6; }
+.theme-heat .sky { filter: url(#haze); inset: -80px; } /* запас по краям: марево сдвигает пиксели */
 
+.page { position: relative; max-width: 1120px; margin: 0 auto; padding: 24px 16px 48px; }
+
+/* ---------------------------------------------------------------- Стекло */
+.glass {
+    position: relative; isolation: isolate;
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(var(--blur)) saturate(var(--sat));
+    backdrop-filter: blur(var(--blur)) saturate(var(--sat));
+    border: 1px solid var(--glass-edge); border-radius: 30px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .55),
+        inset 0 -1px 0 rgba(255, 255, 255, .12),
+        0 24px 60px -24px rgba(0, 0, 0, .35);
+}
+/* Блик: светлая полоса сверху и пятно света под курсором. */
+.glass::before, .btn::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1;
+    background:
+        radial-gradient(320px circle at var(--mx, 20%) var(--my, 0%), rgba(255, 255, 255, .22), transparent 60%),
+        linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0) 38%);
+}
+.theme-frost .glass, .theme-winter .glass, .theme-snow .glass, .theme-fog .glass {
+    /* Матовое стекло: зерно поверх размытия. */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------------------------------------------------------------- Шапка и поиск */
 .head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-.brand { font-weight: 800; font-size: 20px; letter-spacing: -.02em; }
-.search { display: flex; gap: 8px; flex: 1 1 380px; max-width: 520px; }
+.brand { font-weight: 700; font-size: 22px; letter-spacing: -.02em; text-decoration: none; }
+.search { display: flex; gap: 8px; flex: 1 1 380px; max-width: 540px; }
 .search input {
-    flex: 1; min-width: 0; font: inherit; padding: 10px 14px;
-    border: 2px solid var(--line); border-radius: var(--radius); background: var(--panel); color: var(--ink);
+    flex: 1; min-width: 0; font: inherit; color: var(--ink); padding: 12px 18px;
+    background: var(--glass); border: 1px solid var(--glass-edge); border-radius: 999px;
+    -webkit-backdrop-filter: blur(var(--blur)) saturate(var(--sat)); backdrop-filter: blur(var(--blur)) saturate(var(--sat));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45);
 }
-.search input:focus-visible { outline: none; border-color: var(--ink); }
-.search input[aria-invalid="true"] { border-color: var(--warm); }
-.search button {
-    font: inherit; font-weight: 600; padding: 10px 16px; cursor: pointer; white-space: nowrap;
-    background: var(--ink); color: #fff; border: 0; border-radius: var(--radius);
+.search input::placeholder { color: var(--ink-2); }
+.search input:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.search input[aria-invalid="true"] { border-color: var(--warm); border-width: 2px; }
+.btn {
+    position: relative; isolation: isolate; display: inline-flex; align-items: center; justify-content: center;
+    font: inherit; font-weight: 600; padding: 12px 22px; cursor: pointer; white-space: nowrap; text-decoration: none;
+    color: var(--accent-ink); background: var(--accent); border: 0; border-radius: 999px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), 0 10px 24px -10px rgba(0, 0, 0, .45);
+    transition: transform .15s ease, box-shadow .15s ease;
 }
-.search button:hover { background: #24344d; }
-.alert { margin-top: 12px; color: var(--warm); font-weight: 500; }
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(1px) scale(.98); }
+.btn:disabled { cursor: progress; opacity: .8; }
+.btn--small { padding: 9px 18px; font-size: 15px; margin-top: 16px; }
+.alert { margin-top: 12px; font-weight: 600; color: var(--ink); background: var(--glass); border: 2px solid var(--warm); padding: 10px 16px; border-radius: 16px; width: fit-content; }
 
-/* Сейчас: цвет фона зависит от погоды */
-.now {
-    --sky: var(--sky-cloud);
-    margin-top: 28px; padding: 28px; border-radius: var(--radius); background: var(--sky);
-    display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 24px;
+/* Иней на кнопках и поле поиска в холодных темах. */
+.theme-frost .btn::after, .theme-winter .btn::after, .theme-snow .btn::after {
+    background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.6 -.55'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
 }
-.now--clear { --sky: var(--sky-clear); }
-.now--fog { --sky: var(--sky-fog); }
-.now--rain { --sky: var(--sky-rain); }
-.now--snow { --sky: var(--sky-snow); }
-.now--storm { --sky: var(--sky-storm); }
-.now__city { font-size: clamp(30px, 5vw, 44px); font-weight: 800; letter-spacing: -.03em; line-height: 1.05; }
-.now__place { color: var(--ink-2); margin-top: 4px; }
-.now__temp {
-    font-family: 'IBM Plex Mono', monospace; font-weight: 500;
-    font-size: clamp(72px, 13vw, 132px); line-height: .85; letter-spacing: -.06em;
+/* В поле ввода иней только по краям, иначе он мешает читать текст. */
+.theme-frost .search input, .theme-snow .search input {
+    background-image:
+        radial-gradient(ellipse 80% 90% at 50% 50%, var(--sky-2) 50%, transparent 100%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.6 -.55'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
 }
-.now__meta { justify-self: end; text-align: right; color: var(--ink-2); }
-.now__label { color: var(--ink); font-weight: 600; font-size: 20px; }
+.theme-frost .search input { background-image:
+        radial-gradient(ellipse 80% 90% at 50% 50%, #EEF6FC 50%, transparent 100%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.6 -.55'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E"); }
+.theme-frost .btn::after, .theme-winter .btn::after, .theme-snow .btn::after {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    -webkit-mask: radial-gradient(ellipse 70% 80% at 50% 50%, transparent 40%, #000 100%);
+    mask: radial-gradient(ellipse 70% 80% at 50% 50%, transparent 40%, #000 100%);
+    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .9), inset 0 0 14px rgba(255, 255, 255, .9);
+}
+.theme-frost .btn, .theme-winter .btn, .theme-snow .btn { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .8), 0 0 18px rgba(200, 235, 255, .55); }
 
-/* Неделя: все полоски на одной шкале, поэтому видно, какой день теплее */
-.week { margin-top: 20px; background: var(--panel); border-radius: var(--radius); padding: 8px 24px; }
-.week__title { font-size: 15px; font-weight: 600; color: var(--ink-2); padding: 12px 0 4px; }
-.days { list-style: none; }
+/* ---------------------------------------------------------------- Сейчас */
+.hero { margin-top: 24px; padding: 32px; }
+.hero__main { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px; }
+.hero__city { font-size: clamp(32px, 5vw, 48px); font-weight: 700; letter-spacing: -.03em; line-height: 1.05; }
+.hero__place p { margin-top: 4px; }
+.hero__now { display: flex; align-items: center; gap: 8px; }
+.hero__icon { flex: none; filter: drop-shadow(0 8px 16px rgba(0, 0, 0, .18)); }
+.hero__temp { font-size: clamp(76px, 12vw, 136px); font-weight: 300; line-height: .9; letter-spacing: -.04em; font-variant-numeric: proportional-nums; white-space: nowrap; }
+.hero__summary { justify-self: end; text-align: right; }
+.hero__label { font-size: 22px; font-weight: 600; }
+
+.details { margin-top: 28px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1px; border-top: 1px solid var(--glass-edge); padding-top: 4px; }
+.tile { padding: 16px 16px 4px 0; }
+.tile + .tile { padding-left: 16px; border-left: 1px solid var(--track); }
+.tile dt { font-size: 14px; color: var(--ink-2); font-weight: 500; }
+.tile__value { display: flex; align-items: center; gap: 6px; font-size: 24px; font-weight: 500; margin-top: 4px; white-space: nowrap; }
+.tile__value small { font-size: 14px; font-weight: 400; color: var(--ink-2); }
+.tile__note { font-size: 13px; color: var(--ink-2); margin-top: 6px; line-height: 1.4; }
+.compass { width: 28px; height: 28px; flex: none; }
+.compass circle { fill: none; stroke: var(--track); stroke-width: 2; }
+.compass path { fill: var(--ink); transform-origin: 16px 16px; }
+.uv { position: relative; height: 6px; margin-top: 10px; border-radius: 999px; background: linear-gradient(90deg, #4CC26A, #F5D33B 30%, #F28C28 55%, #E23B3B 78%, #A44BD6); }
+.uv span { position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid var(--sky-1); transform: translate(-50%, -50%); }
+.meter { height: 6px; margin-top: 10px; border-radius: 999px; background: var(--track); overflow: hidden; }
+.meter span { display: block; height: 100%; border-radius: inherit; background: var(--cold); }
+
+/* ---------------------------------------------------------------- 24 часа */
+.section-title { font-size: 15px; font-weight: 600; color: var(--ink-2); }
+.hours { margin-top: 20px; padding: 22px 0 14px; }
+.hours .section-title { padding: 0 28px; }
+.hours__scroll { overflow-x: auto; padding: 4px 16px 10px; scrollbar-width: thin; scrollbar-color: var(--track) transparent; }
+.hours__scroll:focus-visible { outline-offset: -3px; border-radius: 20px; }
+.hours__track { position: relative; }
+.hours__curve { display: block; overflow: visible; margin-top: 10px; }
+.hours__curve polyline { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; opacity: .8; }
+.hours__curve circle { fill: var(--ink); }
+.hours__curve text { fill: var(--ink); font: 500 14px 'Onest', sans-serif; text-anchor: middle; }
+.hours__list { list-style: none; display: grid; grid-auto-flow: column; grid-auto-columns: 64px; }
+.hour { display: grid; justify-items: center; gap: 2px; padding: 6px 0; font-size: 13px; }
+.hour__rain { min-height: 18px; color: var(--cold); font-weight: 600; }
+.hour__time { color: var(--ink-2); }
+.hour:first-child .hour__time { color: var(--ink); font-weight: 600; }
+
+/* ---------------------------------------------------------------- 7 дней */
+.week { margin-top: 20px; padding: 22px 28px 10px; }
+.days { list-style: none; margin-top: 6px; }
 .day {
-    display: grid; grid-template-columns: 96px 72px 1fr minmax(220px, 2fr) 170px;
-    align-items: center; gap: 16px; padding: 14px 0; border-top: 1px solid var(--line);
+    display: grid; grid-template-columns: 130px minmax(150px, 1fr) minmax(220px, 1.6fr) auto;
+    align-items: center; gap: 20px; padding: 13px 0; border-top: 1px solid var(--track);
 }
 .days .day:first-child { border-top: 0; }
-.day__name { font-weight: 600; text-transform: capitalize; }
-.day__date { color: var(--ink-3); font-size: 14px; }
-.day__label { color: var(--ink-2); font-size: 15px; }
-.day__extra { color: var(--ink-3); font-size: 13px; text-align: right; }
-.range { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 15px; }
-.range__min { color: var(--cold); text-align: right; }
-.range__max { color: var(--warm); }
-.range__track { position: relative; height: 8px; border-radius: 999px; background: var(--bg); }
-.range__bar { position: absolute; top: 0; bottom: 0; border-radius: 999px; background: linear-gradient(90deg, var(--cold), var(--warm)); min-width: 8px; }
+.day__name { font-weight: 600; }
+.day__name .muted { font-weight: 400; font-size: 14px; margin-left: 6px; }
+.day__label { display: flex; align-items: center; gap: 10px; color: var(--ink-2); }
+.day__label .wx { flex: none; color: var(--ink); }
+.day__extra { list-style: none; display: flex; gap: 14px; justify-content: flex-end; font-size: 13px; color: var(--ink-2); white-space: nowrap; }
+.range { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; gap: 10px; font-size: 15px; font-weight: 500; }
+.range__min { text-align: right; color: var(--ink-2); }
+.range__track { position: relative; height: 6px; border-radius: 999px; background: var(--track); }
+.range__bar { position: absolute; top: 0; bottom: 0; min-width: 6px; border-radius: 999px; background: linear-gradient(90deg, var(--cold), var(--warm)); box-shadow: 0 0 12px rgba(255, 255, 255, .25); }
 
-.source { margin-top: 14px; color: var(--ink-3); font-size: 14px; }
-.source strong { color: var(--warm); }
-
-.empty { margin-top: 28px; padding: 32px 28px; background: var(--panel); border-radius: var(--radius); border-left: 6px solid var(--warm); }
-.empty h1 { font-size: 26px; letter-spacing: -.02em; }
-.empty p { color: var(--ink-2); margin-top: 6px; max-width: 64ch; }
-
-.recent { margin-top: 32px; }
-.recent__title { font-size: 15px; font-weight: 600; color: var(--ink-2); margin-bottom: 10px; }
-.recent ul { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
-.recent a {
-    display: inline-flex; gap: 8px; align-items: center; padding: 6px 12px; text-decoration: none;
-    background: var(--panel); border: 1.5px solid var(--line); border-radius: 999px;
+/* ---------------------------------------------------------------- Прочее */
+.source { margin-top: 14px; padding: 0 8px; font-size: 14px; color: var(--ink-2); }
+.source strong { color: var(--ink); }
+.empty { margin-top: 24px; padding: 34px; }
+.empty h1 { font-size: 28px; letter-spacing: -.02em; }
+.empty p { color: var(--ink-2); margin-top: 8px; max-width: 64ch; }
+.recent, .themes { margin-top: 30px; }
+.themes .muted { margin-top: 6px; max-width: 72ch; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.chip {
+    padding: 7px 15px; text-decoration: none; font-size: 15px; border-radius: 999px;
+    background: var(--glass); border: 1px solid var(--glass-edge);
+    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
 }
-.recent a:hover { border-color: var(--ink); }
-.recent li span { display: none; }
+.chip:hover { background: var(--track); }
+.chip[aria-current] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.foot { margin-top: 40px; }
 
-.foot { margin-top: 48px; color: var(--ink-3); font-size: 13px; }
+/* ================================================================ Эффекты */
+.fx { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.fx--front { z-index: 10; }
+.fx i { position: absolute; display: block; }
 
+/* Ночь: звёзды */
+.star { width: var(--s); height: var(--s); border-radius: 50%; background: #fff; box-shadow: 0 0 6px #fff; animation: twinkle var(--d) ease-in-out infinite; }
+@keyframes twinkle { 50% { opacity: .2; } }
+
+/* Дождь: косые струи на фоне, капли на стекле, стекающие капли со следом. */
+.streaks {
+    position: absolute; inset: -20%; opacity: .35;
+    background: repeating-linear-gradient(105deg, transparent 0 22px, rgba(200, 225, 255, .5) 22px 23px, transparent 23px 47px);
+    animation: pour .45s linear infinite;
+}
+@keyframes pour { to { transform: translate(-12px, 64px); } }
+.drop, .runner {
+    width: var(--s); height: calc(var(--s) * 1.15); border-radius: 50% 50% 48% 48% / 55% 55% 45% 45%;
+    background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .85) 0 12%, rgba(255, 255, 255, .12) 35%, rgba(150, 190, 230, .18) 70%, rgba(255, 255, 255, .5) 100%);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, .25), inset 0 -2px 3px rgba(255, 255, 255, .35);
+    -webkit-backdrop-filter: blur(1px) brightness(1.2); backdrop-filter: blur(1px) brightness(1.2);
+}
+.runner { top: -6%; z-index: 3; animation: run var(--d) cubic-bezier(.55, 0, .7, 1) infinite; }
+.runner::before {
+    content: ''; position: absolute; left: 50%; bottom: 80%; width: 32%; height: 140px; transform: translateX(-50%);
+    border-radius: 999px; background: linear-gradient(to top, rgba(220, 235, 255, .35), transparent);
+}
+@keyframes run {
+    0% { transform: translate(0, 0); }
+    30% { transform: translate(2px, 22vh); }
+    38% { transform: translate(-1px, 25vh); }
+    100% { transform: translate(3px, 112vh); }
+}
+.flash { position: absolute; inset: 0; background: #E8E2FF; opacity: 0; animation: flash 9s infinite; }
+@keyframes flash { 0%, 89%, 100% { opacity: 0; } 90% { opacity: .55; } 91% { opacity: .05; } 92.5% { opacity: .4; } 94% { opacity: 0; } }
+
+/* Снег */
+.flake { top: -4%; width: var(--s); height: var(--s); border-radius: 50%; background: #fff; box-shadow: 0 0 8px rgba(255, 255, 255, .9); opacity: .9; animation: fall var(--d) linear infinite; }
+@keyframes fall { to { transform: translate(var(--x), 108vh); } }
+
+/* Мороз: углы экрана затягивает инеем, вспыхивают искры. */
+.frost-corners {
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.035 .09' numOctaves='4' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 2.2 -.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+    -webkit-mask: radial-gradient(ellipse 75% 70% at 50% 50%, transparent 55%, #000 100%);
+    mask: radial-gradient(ellipse 75% 70% at 50% 50%, transparent 55%, #000 100%);
+    opacity: .9;
+}
+.sparkle { width: 3px; height: 3px; background: #fff; border-radius: 50%; box-shadow: 0 0 10px 2px #fff; opacity: 0; animation: twinkle var(--d) ease-in-out infinite reverse; }
+
+/* Осень: листья летят по ветру, сила ветра из прогноза задаёт снос (--wind). */
+.leaf {
+    top: -8%; width: calc(var(--s) * .8); height: var(--s);
+    /* Жилка по центру листа и тень от неё дают объём. */
+    background: linear-gradient(90deg, transparent 47%, rgba(0, 0, 0, .25) 49%, rgba(255, 255, 255, .25) 51%, transparent 53%), linear-gradient(135deg, var(--c), color-mix(in srgb, var(--c) 70%, #000));
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1C5 6 3.5 12.5 6.5 18c1.3 2.3 3.2 3.4 4.7 3.8L11 23h2l-.2-1.2c1.5-.4 3.4-1.5 4.7-3.8C20.5 12.5 19 6 12 1z'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1C5 6 3.5 12.5 6.5 18c1.3 2.3 3.2 3.4 4.7 3.8L11 23h2l-.2-1.2c1.5-.4 3.4-1.5 4.7-3.8C20.5 12.5 19 6 12 1z'/%3E%3C/svg%3E") center / contain no-repeat;
+    animation: leaf var(--d) linear infinite;
+}
+@keyframes leaf {
+    0% { transform: translate(0, 0) rotate(var(--rot)); }
+    25% { transform: translate(calc(var(--wind) * 6px + 40px), 27vh) rotate(calc(var(--rot) + 140deg)); }
+    50% { transform: translate(calc(var(--wind) * 12px), 55vh) rotate(calc(var(--rot) + 60deg)); }
+    75% { transform: translate(calc(var(--wind) * 20px + 50px), 82vh) rotate(calc(var(--rot) + 220deg)); }
+    100% { transform: translate(calc(var(--wind) * 26px), 112vh) rotate(calc(var(--rot) + 320deg)); }
+}
+.gust { left: -30%; width: var(--w); height: 1.5px; border-radius: 999px; background: linear-gradient(90deg, transparent, rgba(255, 240, 220, .55), transparent); animation: gust var(--d) ease-in infinite; }
+@keyframes gust { to { transform: translateX(160vw); } }
+
+/* Весна: лепестки и ветки с цветами на углах панелей. */
+.petal { top: -4%; width: var(--s); height: var(--s); border-radius: 150% 0 150% 0; background: linear-gradient(135deg, #FFD3E2, #FF8FB5); opacity: .9; animation: petal var(--d) ease-in-out infinite; }
+@keyframes petal {
+    0% { transform: translate(0, 0) rotate(0); }
+    33% { transform: translate(var(--x), 36vh) rotate(160deg); }
+    66% { transform: translate(calc(var(--x) * -.4), 72vh) rotate(300deg); }
+    100% { transform: translate(var(--x), 108vh) rotate(460deg); }
+}
+.vine { position: absolute; width: 220px; height: 184px; pointer-events: none; z-index: 2; overflow: visible; }
+.vine--tl { top: -26px; left: -22px; }
+.vine--br { bottom: -26px; right: -22px; transform: rotate(180deg); }
+.vine--tr { top: -26px; right: -22px; transform: scaleX(-1); }
+.vine__stem { fill: none; stroke: #3E7A3A; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 600; stroke-dashoffset: 600; animation: grow 2.2s ease-out .2s forwards; }
+.vine__stem--thin { stroke-width: 2.4; animation-delay: 1s; }
+.vine__leaves ellipse { fill: #5FA052; opacity: 0; animation: bloom .6s ease-out forwards; animation-delay: 1.4s; }
+.vine__flower { opacity: 0; animation: bloom .7s cubic-bezier(.3, 1.6, .5, 1) forwards; animation-delay: calc(1.6s + var(--i) * .18s); }
+.vine__flower ellipse { fill: #FFF6FA; stroke: #F58DB2; stroke-width: 1; }
+.vine__heart { fill: #F6C342; }
+@keyframes grow { to { stroke-dashoffset: 0; } }
+@keyframes bloom { from { opacity: 0; scale: .2; } to { opacity: 1; scale: 1; } }
+
+/* Лето: солнечный блик и пылинки в лучах. */
+.flare { position: absolute; top: -18vmax; right: -12vmax; width: 60vmax; height: 60vmax; border-radius: 50%; background: radial-gradient(circle, rgba(255, 245, 200, .7), rgba(255, 220, 120, .15) 40%, transparent 65%); animation: pulse 8s ease-in-out infinite; }
+.flare--heat { background: radial-gradient(circle, rgba(255, 255, 230, .95), rgba(255, 200, 80, .35) 35%, transparent 65%); }
+@keyframes pulse { 50% { transform: scale(1.08); opacity: .85; } }
+.mote { width: 4px; height: 4px; border-radius: 50%; background: rgba(255, 250, 220, .8); box-shadow: 0 0 8px rgba(255, 240, 180, .9); animation: drift var(--d) ease-in-out infinite alternate; }
+@keyframes drift { to { transform: translate(30px, -40px); opacity: .2; } }
+
+/* Туман: полосы медленно ползут по экрану. */
+.fogbank { position: absolute; left: -50%; width: 200%; height: 40vh; border-radius: 50%; background: radial-gradient(ellipse at center, rgba(255, 255, 255, .7), transparent 70%); filter: blur(20px); animation: fogmove 40s linear infinite alternate; }
+.fogbank--a { top: 10%; }
+.fogbank--b { top: 45%; animation-duration: 55s; animation-direction: alternate-reverse; opacity: .8; }
+.fogbank--c { top: 75%; animation-duration: 70s; }
+@keyframes fogmove { to { transform: translateX(25%); } }
+
+/* Жара: нижний край панелей плавится и стекает. Фильтр goo склеивает капли с краем. */
+.drips { position: absolute; left: 30px; right: 30px; top: calc(100% - 4px); height: 90px; pointer-events: none; z-index: 3; filter: url(#goo); }
+.drips::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 7px; border-radius: 0 0 50% 50%; background: var(--drip); }
+.theme-heat .glass { border-bottom: 4px solid var(--drip); }
+.drips i {
+    position: absolute; top: 2px; width: var(--w); height: var(--h); margin-left: calc(var(--w) / -2);
+    background: var(--drip); border-radius: 0 0 999px 999px; transform-origin: top;
+    animation: melt var(--d) ease-in-out infinite;
+}
+.drips i::after {
+    content: ''; position: absolute; left: 50%; bottom: 0; width: calc(var(--w) * .7); height: calc(var(--w) * .8);
+    margin-left: calc(var(--w) * -.35); border-radius: 50%; background: var(--drip);
+    animation: dripfall var(--d) ease-in infinite;
+}
+@keyframes melt { 0%, 100% { transform: scaleY(.45); } 55% { transform: scaleY(1); } }
+@keyframes dripfall { 0%, 50% { transform: translateY(0); opacity: 1; } 85% { transform: translateY(46px); opacity: 1; } 100% { transform: translateY(60px); opacity: 0; } }
+.theme-heat .hero__temp { text-shadow: 0 6px 0 rgba(255, 241, 220, .7), 0 14px 18px rgba(255, 120, 0, .35); }
+.theme-heat .hero, .theme-heat .hours, .theme-heat .week { margin-bottom: 46px; }
+.theme-heat .hours, .theme-heat .week { margin-top: 0; }
+
+/* ---------------------------------------------------------------- Адаптив */
+@media (max-width: 960px) {
+    .details { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .tile:nth-child(3n + 1) { padding-left: 0; border-left: 0; }
+    .tile:nth-child(n + 4) { border-top: 1px solid var(--track); }
+}
 @media (max-width: 860px) {
-    .now { grid-template-columns: 1fr auto; }
-    .now__meta { grid-column: 1 / -1; justify-self: start; text-align: left; }
-    .day { grid-template-columns: 1fr 1fr; gap: 4px 12px; }
-    .day__label { grid-column: 1 / -1; }
+    .hero__main { grid-template-columns: 1fr; gap: 10px; }
+    .hero__summary { justify-self: start; text-align: left; }
+    .day { grid-template-columns: 1fr auto; gap: 6px 12px; }
     .range { grid-column: 1 / -1; }
-    .day__extra { grid-column: 1 / -1; text-align: left; }
+    .day__extra { grid-column: 1 / -1; justify-content: flex-start; }
+    .day__label { justify-self: end; }
 }
-@media (max-width: 520px) {
+@media (max-width: 560px) {
     .search { flex-direction: column; }
-    .now { padding: 22px 18px; }
-    .week { padding: 6px 16px; }
+    .hero { padding: 22px 18px; }
+    .hero__temp { font-size: 84px; }
+    .details { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .tile, .tile + .tile { padding: 14px 10px 6px 0; border-left: 0; }
+    .tile:nth-child(even) { padding-left: 12px; border-left: 1px solid var(--track); }
+    .tile:nth-child(n + 3) { border-top: 1px solid var(--track); }
+    .tile__value { font-size: 22px; }
+    .week { padding: 18px 18px 8px; }
+    .hours .section-title { padding: 0 18px; }
+    .vine { width: 150px; height: 126px; }
+}
+
+/* Без анимаций для тех, кто их отключил: эффекты остаются картинкой. */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0s !important; animation-iteration-count: 1 !important; transition: none !important; }
+    .vine__stem { stroke-dashoffset: 0; }
+    .theme-heat .sky { filter: none; }
 }

@@ -39,7 +39,17 @@ class WeatherTest extends TestCase
         return [
             'current' => [
                 'time' => '2026-11-24T12:00', 'temperature_2m' => $temp, 'apparent_temperature' => 11.2,
-                'relative_humidity_2m' => 80, 'wind_speed_10m' => 0.9, 'weather_code' => 3,
+                'relative_humidity_2m' => 80, 'wind_speed_10m' => 0.9, 'wind_direction_10m' => 87,
+                'wind_gusts_10m' => 2.4, 'weather_code' => 3, 'uv_index' => 6.4, 'visibility' => 32160,
+                'pressure_msl' => 1025.9, 'is_day' => 1,
+            ],
+            'hourly' => [
+                'time' => array_map(fn ($h) => sprintf('2026-11-24T%02d:00', 12 + $h), range(0, 11)),
+                'temperature_2m' => range(13, 2, -1),
+                'weather_code' => array_fill(0, 12, 61),
+                'precipitation_probability' => array_fill(0, 12, 70),
+                'wind_speed_10m' => array_fill(0, 12, 3.2),
+                'is_day' => array_fill(0, 12, 1),
             ],
             'daily' => [
                 'time' => $dates,
@@ -48,6 +58,9 @@ class WeatherTest extends TestCase
                 'temperature_2m_min' => [8, 5, 5, 3, 3, 2, 1],
                 'precipitation_probability_max' => [99, 66, 12, 100, 4, 8, 51],
                 'wind_speed_10m_max' => [2, 2, 4, 3, 2, 3, 2],
+                'uv_index_max' => [2, 2, 1, 1, 2, 2, 0],
+                'sunrise' => array_map(fn ($d) => "{$d}T07:56", $dates),
+                'sunset' => array_map(fn ($d) => "{$d}T17:21", $dates),
             ],
         ];
     }
@@ -61,7 +74,18 @@ class WeatherTest extends TestCase
             ->assertSee('Алматы')
             ->assertSee('+13°')
             ->assertSee('Пасмурно')
-            ->assertSee('только что получены');
+            ->assertSee('только что получены')
+            // Подробности: ветер, УФ, видимость, давление, солнце.
+            ->assertSee('Тихий, восточный')
+            ->assertSee('Порывы до 2.4 м/с')
+            ->assertSee('высокий')
+            ->assertSee('32 <small>км</small>', false)
+            ->assertSee('769 <small>мм рт. ст.</small>', false)
+            ->assertSee('Световой день 9 ч 25 мин')
+            // Почасовой прогноз.
+            ->assertSee('Ближайшие 24 часа')
+            ->assertSee('Сейчас')
+            ->assertSee('23:00');
 
         $this->assertSame(1, Search::where('city', 'Алматы')->value('hits'));
     }
@@ -86,7 +110,7 @@ class WeatherTest extends TestCase
         $this->get('/?city=Алматы')->assertOk();
 
         // Свежий кеш истёк, а API упал: показываем последний удачный прогноз.
-        Cache::forget('forecast:43.25,76.92');
+        Cache::forget('forecast:v2:43.25,76.92');
 
         $this->get('/?city=Алматы')
             ->assertOk()
@@ -122,7 +146,11 @@ class WeatherTest extends TestCase
             ->assertOk()
             ->assertJsonPath('city.name', 'Алматы')
             ->assertJsonPath('forecast.current.temperature', 13)
-            ->assertJsonCount(7, 'forecast.days');
+            ->assertJsonCount(7, 'forecast.days')
+            ->assertJsonCount(12, 'forecast.hours')
+            ->assertJsonPath('forecast.current.uv', 6.4)
+            ->assertJsonPath('forecast.current.visibility', 32.2)
+            ->assertJsonPath('forecast.current.wind_direction', 87);
 
         $this->getJson('/api/weather')->assertUnprocessable();
     }
@@ -140,5 +168,17 @@ class WeatherTest extends TestCase
 
         $this->get('/?city='.str_repeat('а', 81))->assertSessionHasErrors('city');
         Http::assertNothingSent();
+    }
+
+    public function test_theme_follows_weather_and_can_be_chosen(): void
+    {
+        Http::fake([self::GEO => Http::response($this->geo()), self::FORECAST => Http::response($this->forecast(31))]);
+
+        // +31° без осадков: жара, панели «плавятся».
+        $this->get('/?city=Алматы')->assertOk()->assertSee('theme-heat', false)->assertSee('class="drips"', false);
+        // Ручной выбор оформления для показа.
+        $this->get('/?city=Алматы&theme=rain')->assertOk()->assertSee('theme-rain', false)->assertSee('class="runner"', false);
+        // Чужое значение не проходит валидацию.
+        $this->get('/?city=Алматы&theme=lava')->assertSessionHasErrors('theme');
     }
 }
