@@ -130,7 +130,7 @@ a { color: inherit; text-underline-offset: 3px; }
 .page { position: relative; max-width: 1120px; margin: 0 auto; padding: 24px 16px 48px; }
 
 /* ---------------------------------------------------------------- Стекло */
-.glass {
+.panel {
     position: relative; isolation: isolate;
     background: var(--glass);
     -webkit-backdrop-filter: blur(var(--blur)) saturate(var(--sat));
@@ -142,13 +142,13 @@ a { color: inherit; text-underline-offset: 3px; }
         0 24px 60px -24px rgba(0, 0, 0, .35);
 }
 /* Блик: светлая полоса сверху и пятно света под курсором. */
-.glass::before, .btn::before {
+.panel::before, .btn::before {
     content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1;
     background:
         radial-gradient(320px circle at var(--mx, 20%) var(--my, 0%), rgba(255, 255, 255, .22), transparent 60%),
         linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0) 38%);
 }
-.theme-frost .glass, .theme-winter .glass, .theme-snow .glass, .theme-fog .glass {
+.theme-frost .panel, .theme-winter .panel, .theme-snow .panel, .theme-fog .panel {
     /* Матовое стекло: зерно поверх размытия. */
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
@@ -156,7 +156,7 @@ a { color: inherit; text-underline-offset: 3px; }
 /* ---------------------------------------------------------------- Шапка и поиск */
 .head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .brand { font-weight: 700; font-size: 22px; letter-spacing: -.02em; text-decoration: none; }
-.search { display: flex; gap: 8px; flex: 1 1 380px; max-width: 540px; }
+.search { display: flex; gap: 8px; flex: 1 1 380px; max-width: 540px; margin-left: auto; }
 .search input {
     flex: 1; min-width: 0; font: inherit; color: var(--ink); padding: 12px 18px;
     background: var(--glass); border: 1px solid var(--glass-edge); border-radius: 999px;
@@ -202,7 +202,17 @@ a { color: inherit; text-underline-offset: 3px; }
 .theme-frost .btn, .theme-winter .btn, .theme-snow .btn { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .8), 0 0 18px rgba(200, 235, 255, .55); }
 
 /* ---------------------------------------------------------------- Сейчас */
-.hero { margin-top: 24px; padding: 32px; }
+.board {
+    margin-top: 24px; display: grid; gap: 20px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "hero" "details" "hours" "week" "source";
+}
+.hero { grid-area: hero; padding: 32px; }
+.details-panel { grid-area: details; padding: 22px 28px 18px; }
+.hours { grid-area: hours; }
+.week { grid-area: week; }
+.source { grid-area: source; }
+.hero__label span { display: inline-block; }
 .hero__main { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px; }
 .hero__city { font-size: clamp(32px, 5vw, 48px); font-weight: 700; letter-spacing: -.03em; line-height: 1.05; }
 .hero__place p { margin-top: 4px; }
@@ -212,7 +222,9 @@ a { color: inherit; text-underline-offset: 3px; }
 .hero__summary { justify-self: end; text-align: right; }
 .hero__label { font-size: 22px; font-weight: 600; }
 
-.details { margin-top: 28px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1px; border-top: 1px solid var(--glass-edge); padding-top: 4px; }
+.details { margin-top: 6px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1px; }
+.tile dt { display: flex; align-items: center; gap: 6px; }
+.tile dt .wx { flex: none; opacity: .85; }
 .tile { padding: 16px 16px 4px 0; }
 .tile + .tile { padding-left: 16px; border-left: 1px solid var(--track); }
 .tile dt { font-size: 14px; color: var(--ink-2); font-weight: 500; }
@@ -229,7 +241,7 @@ a { color: inherit; text-underline-offset: 3px; }
 
 /* ---------------------------------------------------------------- 24 часа */
 .section-title { font-size: 15px; font-weight: 600; color: var(--ink-2); }
-.hours { margin-top: 20px; padding: 22px 0 14px; }
+.hours { padding: 22px 0 14px; }
 .hours .section-title { padding: 0 28px; }
 .hours__scroll { overflow-x: auto; padding: 4px 16px 10px; scrollbar-width: thin; scrollbar-color: var(--track) transparent; }
 .hours__scroll:focus-visible { outline-offset: -3px; border-radius: 20px; }
@@ -245,7 +257,7 @@ a { color: inherit; text-underline-offset: 3px; }
 .hour:first-child .hour__time { color: var(--ink); font-weight: 600; }
 
 /* ---------------------------------------------------------------- 7 дней */
-.week { margin-top: 20px; padding: 22px 28px 10px; }
+.week { padding: 22px 28px 10px; }
 .days { list-style: none; margin-top: 6px; }
 .day {
     display: grid; grid-template-columns: 130px minmax(150px, 1fr) minmax(220px, 1.6fr) auto;
@@ -263,9 +275,11 @@ a { color: inherit; text-underline-offset: 3px; }
 .range__bar { position: absolute; top: 0; bottom: 0; min-width: 6px; border-radius: 999px; background: linear-gradient(90deg, var(--cold), var(--warm)); box-shadow: 0 0 12px rgba(255, 255, 255, .25); }
 
 /* ---------------------------------------------------------------- Прочее */
-.source { margin-top: 14px; padding: 0 8px; font-size: 14px; color: var(--ink-2); }
+.source { margin-top: -6px; padding: 0 8px; font-size: 14px; color: var(--ink-2); }
 .source strong { color: var(--ink); }
 .empty { margin-top: 24px; padding: 34px; }
+.btn--ghost { gap: 8px; background: var(--glass); color: var(--ink); border: 1px solid var(--glass-edge); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+.btn--ghost .wx { flex: none; }
 .empty h1 { font-size: 28px; letter-spacing: -.02em; }
 .empty p { color: var(--ink-2); margin-top: 8px; max-width: 64ch; }
 .recent, .themes { margin-top: 30px; }
@@ -387,7 +401,7 @@ a { color: inherit; text-underline-offset: 3px; }
 /* Жара: нижний край панелей плавится и стекает. Фильтр goo склеивает капли с краем. */
 .drips { position: absolute; left: 30px; right: 30px; top: calc(100% - 4px); height: 90px; pointer-events: none; z-index: 3; filter: url(#goo); }
 .drips::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 7px; border-radius: 0 0 50% 50%; background: var(--drip); }
-.theme-heat .glass { border-bottom: 4px solid var(--drip); }
+.theme-heat .panel { border-bottom: 4px solid var(--drip); }
 .drips i {
     position: absolute; top: 2px; width: var(--w); height: var(--h); margin-left: calc(var(--w) / -2);
     background: var(--drip); border-radius: 0 0 999px 999px; transform-origin: top;
@@ -401,8 +415,7 @@ a { color: inherit; text-underline-offset: 3px; }
 @keyframes melt { 0%, 100% { transform: scaleY(.45); } 55% { transform: scaleY(1); } }
 @keyframes dripfall { 0%, 50% { transform: translateY(0); opacity: 1; } 85% { transform: translateY(46px); opacity: 1; } 100% { transform: translateY(60px); opacity: 0; } }
 .theme-heat .hero__temp { text-shadow: 0 6px 0 rgba(255, 241, 220, .7), 0 14px 18px rgba(255, 120, 0, .35); }
-.theme-heat .hero, .theme-heat .hours, .theme-heat .week { margin-bottom: 46px; }
-.theme-heat .hours, .theme-heat .week { margin-top: 0; }
+.theme-heat .board { row-gap: 64px; }
 
 /* ---------------------------------------------------------------- Адаптив */
 @media (max-width: 960px) {
@@ -432,9 +445,6 @@ a { color: inherit; text-underline-offset: 3px; }
     .vine { width: 150px; height: 126px; }
 }
 
-/* Без анимаций для тех, кто их отключил: эффекты остаются картинкой. */
-@media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: 0s !important; animation-iteration-count: 1 !important; transition: none !important; }
-    .vine__stem { stroke-dashoffset: 0; }
-    .theme-heat .sky { filter: none; }
-}
+
+/* Повёрнутые наклейки и тени не должны давать горизонтальную прокрутку на телефоне. */
+html { overflow-x: clip; }

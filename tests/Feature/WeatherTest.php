@@ -181,4 +181,43 @@ class WeatherTest extends TestCase
         // Чужое значение не проходит валидацию.
         $this->get('/?city=Алматы&theme=lava')->assertSessionHasErrors('theme');
     }
+
+    public function test_style_changes_layout_and_is_remembered(): void
+    {
+        Http::fake([self::GEO => Http::response($this->geo()), self::FORECAST => Http::response($this->forecast())]);
+
+        // Выбор в настройках: ссылка с ?style= запоминает стиль в cookie.
+        $this->get('/?city=Алматы&style=terminal')
+            ->assertOk()
+            ->assertSee('style-terminal', false)
+            ->assertSee('$ weather now --city="Алматы"', false)
+            ->assertSee('░', false)            // полоски температур символами
+            ->assertCookie('ui_style', 'terminal');
+
+        // Следующий заход без параметра берёт стиль из cookie.
+        $this->withCookie('ui_style', 'resort')->get('/?city=Алматы')
+            ->assertOk()->assertSee('style-resort', false)->assertSee('Привет из')->assertSee('class="palms"', false);
+
+        // Пиксельный стиль рисует значки клетками.
+        $this->get('/?city=Алматы&style=pixel')->assertOk()->assertSee('wx--pixel', false);
+    }
+
+    public function test_unknown_style_is_rejected(): void
+    {
+        Http::fake();
+
+        $this->get('/?city=Алматы&style=gta')->assertSessionHasErrors('style');
+        Http::assertNothingSent();
+    }
+
+    public function test_settings_dialog_lists_all_styles(): void
+    {
+        Http::fake([self::GEO => Http::response($this->geo()), self::FORECAST => Http::response($this->forecast())]);
+
+        $page = $this->get('/?city=Алматы')->assertOk()->assertSee('id="settings"', false);
+        foreach (['Стекло', 'Альманах', 'Пиксели', 'Брутал', 'Терминал', 'Курорт'] as $label) {
+            $page->assertSee($label);
+        }
+        $page->assertSee('style-glass', false); // по умолчанию
+    }
 }

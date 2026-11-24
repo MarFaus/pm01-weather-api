@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Support\Conditions;
+use App\Support\Style;
 use App\Support\Theme;
 use Illuminate\Support\Carbon;
 use PHPUnit\Framework\TestCase;
@@ -50,5 +51,14 @@ class ThemeTest extends TestCase
         $this->assertSame('северный', Conditions::direction(355));
         $this->assertSame('В', Conditions::direction(87, true));
         $this->assertSame('юго-западный', Conditions::direction(225));
+    }
+
+    public function test_style_pick_prefers_query_then_cookie(): void
+    {
+        $this->assertSame('pixel', Style::pick('pixel', 'resort'));
+        $this->assertSame('resort', Style::pick(null, 'resort'));
+        $this->assertSame('glass', Style::pick(null, 'hacked'));
+        $this->assertSame('glass', Style::pick(null, null));
+        $this->assertCount(6, Style::ALL);
     }
 }

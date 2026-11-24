@@ -10,8 +10,18 @@
     <span class="sky__blob sky__blob--c"></span>
 </div>
 
-{{-- Задний слой: за стеклом, размывается им. --}}
+{{-- Задний слой: за панелями. --}}
 <div class="fx" aria-hidden="true">
+    @if ($ui === 'resort')
+        {{-- Курорт: закатное солнце в полоску и силуэты пальм. Нарисовано с нуля, без материалов игры. --}}
+        <div class="resort-sun"></div>
+        <svg class="palms" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMax slice">
+            <g class="palm" transform="translate(90 300)"><path d="M0 0C6-70 10-140 34-210" fill="none" stroke-width="12"/><path d="M34-210c-40-10-80 0-110 30 36-10 70-16 104-10zM34-210c30-36 80-46 120-30-40 2-80 14-112 40zM34-210c10-46 50-76 96-80-34 20-60 50-86 88zM34-210c-36-36-86-40-124-20 40-2 82 6 116 26zM34-210c40 4 76 30 92 70-30-26-62-44-96-56z"/></g>
+            <g class="palm" transform="translate(1050 300) scale(-1.25 1.25)"><path d="M0 0C6-70 10-140 34-210" fill="none" stroke-width="12"/><path d="M34-210c-40-10-80 0-110 30 36-10 70-16 104-10zM34-210c30-36 80-46 120-30-40 2-80 14-112 40zM34-210c10-46 50-76 96-80-34 20-60 50-86 88zM34-210c-36-36-86-40-124-20 40-2 82 6 116 26zM34-210c40 4 76 30 92 70-30-26-62-44-96-56z"/></g>
+            <g class="palm" transform="translate(1160 300) scale(-.8 .8)"><path d="M0 0C6-70 10-140 34-210" fill="none" stroke-width="12"/><path d="M34-210c-40-10-80 0-110 30 36-10 70-16 104-10zM34-210c30-36 80-46 120-30-40 2-80 14-112 40zM34-210c10-46 50-76 96-80-34 20-60 50-86 88zM34-210c-36-36-86-40-124-20 40-2 82 6 116 26zM34-210c40 4 76 30 92 70-30-26-62-44-96-56z"/></g>
+        </svg>
+    @endif
+    @if ($ui === 'terminal') <div class="scanlines"></div> @endif
     @if ($isNight && in_array($theme, ['summer', 'spring', 'autumn', 'winter', 'heat', 'frost'], true))
         @for ($i = 0; $i < 60; $i++)
             <i class="star" style="left: {{ $r(0, 100) }}%; top: {{ $r(0, 60) }}%; --s: {{ $r(1, 2.6) }}px; --d: {{ $r(2, 6) }}s; animation-delay: -{{ $r(0, 6) }}s"></i>
@@ -89,6 +99,13 @@
 
 {{-- Фильтры: «липкая жидкость» для капель жары и марево для фона. --}}
 <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+    {{-- Заливки для значков: штриховка (Альманах) и неоновые градиенты (Курорт). --}}
+    <defs>
+        <pattern id="hatch" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0v3" stroke="currentColor" stroke-width="1.2"/></pattern>
+        <pattern id="hatch-light" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><path d="M0 0v4" stroke="currentColor" stroke-width=".5"/></pattern>
+        <linearGradient id="g-sun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE14D"/><stop offset=".55" stop-color="#FF8A3D"/><stop offset="1" stop-color="#FF2E88"/></linearGradient>
+        <linearGradient id="g-cloud" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#C9F3FF"/></linearGradient>
+    </defs>
     <filter id="goo">
         <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b"/>
         <feColorMatrix in="b" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -8"/>

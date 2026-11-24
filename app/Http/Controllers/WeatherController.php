@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Search;
 use App\Services\OpenMeteo;
+use App\Support\Style;
 use App\Support\Theme;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\View as ViewFacade;
 use Illuminate\View\View;
 
 class WeatherController extends Controller
@@ -22,6 +25,8 @@ class WeatherController extends Controller
             'city' => ['nullable', 'string', 'max:80'],
             // Ручной выбор оформления для показа: ?theme=rain. Без параметра тема подбирается по погоде.
             'theme' => ['nullable', 'string', 'in:'.implode(',', array_keys(Theme::LABELS))],
+            // Стиль интерфейса из окна «Настройки». Запоминается в cookie на год.
+            'style' => ['nullable', 'string', 'in:'.implode(',', array_keys(Style::ALL))],
         ], [
             'city.max' => 'Название города не длиннее 80 символов.',
         ]);
@@ -32,6 +37,13 @@ class WeatherController extends Controller
         if ($result['city'] && isset($data['city'])) {
             Search::remember($result['city']);
         }
+
+        $ui = Style::pick($data['style'] ?? null, $request->cookie(Style::COOKIE));
+        if (isset($data['style'])) {
+            Cookie::queue(Style::COOKIE, $ui, 60 * 24 * 365);
+        }
+        // Стиль нужен и компонентам (значки погоды), поэтому делаем его общим для всех шаблонов.
+        ViewFacade::share('ui', $ui);
 
         $auto = $result['forecast'] ? Theme::resolve($result['forecast']['current'], $result['city']['latitude']) : 'fog';
 
